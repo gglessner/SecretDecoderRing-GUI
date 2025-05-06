@@ -60,10 +60,7 @@ pycryptodome>=3.10.0
 ## Usage
 
 1. **Launch the Module**:
-   - Run the `SecretDecoderRing` module, either as part of the HACKtiveMQ Suite or standalone:
-     ```bash
-     python 4_SecretDecoderRing.py
-     ```
+   - Run the `SecretDecoderRing` module, via the ningu framework or the HACKtiveMQ Suite.
 
 2. **Input Data**:
    - **Key**: Enter the encryption key in the `Key` field (Base64, HEX, or ASCII format).
@@ -104,7 +101,6 @@ HACKtiveMQ_Suite/
 ## Limitations
 - **Encryption Modules**: Requires properly formatted modules in `modules/SecretDecoderRing_modules` with a `decrypt` function. Missing or incompatible modules will prevent decryption.
 - **ASCII Output**: Only decryptions producing typeable ASCII (printable characters 32-126) are displayed in the `PlainText` table.
-- **No JDK Dependency**: Unlike `LoadActiveMQ`, this module does not require a JDK unless used with other suite modules that do.
 
 ## Troubleshooting
 - **No Decryption Results**:
