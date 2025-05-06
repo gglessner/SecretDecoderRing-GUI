@@ -88,6 +88,7 @@ pycryptodome>=3.10.0
    - **Clear**: Clear the `PlainText` table.
 
 ## Directory Structure
+```
 HACKtiveMQ_Suite/
 ├── modules/
 │   ├── SecretDecoderRing_modules/   # Place encryption modules here
@@ -98,9 +99,9 @@ HACKtiveMQ_Suite/
 │   │   ├── ChaCha20_v1.0.py
 │   │   └── ...
 └── 4_SecretDecoderRing.py          # SecretDecoderRing module
+```
 
 ## Limitations
-- **Windows-Only**: The module’s GUI and file handling are optimized for Windows, and compatibility with Linux or macOS is untested.
 - **Encryption Modules**: Requires properly formatted modules in `modules/SecretDecoderRing_modules` with a `decrypt` function. Missing or incompatible modules will prevent decryption.
 - **ASCII Output**: Only decryptions producing typeable ASCII (printable characters 32-126) are displayed in the `PlainText` table.
 - **No JDK Dependency**: Unlike `LoadActiveMQ`, this module does not require a JDK unless used with other suite modules that do.
