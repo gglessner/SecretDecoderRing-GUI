@@ -2,10 +2,6 @@
 
 The `SecretDecoderRing` module is a component of the **HACKtiveMQ Suite**, designed to decrypt ciphertexts using various encryption algorithms and modes on a Windows system. It provides a graphical interface to input ciphertexts, keys, and IVs/nonces, and attempts decryption using multiple cryptographic modules.
 
-**Important Notes**:
-- This module is currently **Windows-only** due to its GUI implementation and file handling conventions.
-- If used alongside other HACKtiveMQ Suite modules like `LoadActiveMQ`, **classic versions** of Apache ActiveMQ `.zip` files (e.g., `apache-activemq-5.9.1-bin.zip`) should be placed in the `modules/Load_ActiveMQ` directory.
-
 ## Overview
 
 The `SecretDecoderRing` module enables users to:
@@ -21,7 +17,6 @@ The module dynamically loads encryption modules from the `modules/SecretDecoderR
 
 ### Software
 - **Python**: Version 3.8 or later recommended.
-- **Windows Operating System**: The module is Windows-only due to its GUI and file handling conventions.
 
 ### Python Dependencies
 The following Python packages are required, as specified in `requirements.txt`:
@@ -52,10 +47,6 @@ pycryptodome>=3.10.0
    - Place encryption module files (e.g., `AES_v1.1.py`, `3DES_v1.0.py`, `Blowfish_v1.0.py`, `CAST5_v1.0.py`, `ChaCha20_v1.0.py`) in the `modules/SecretDecoderRing_modules` directory.
    - The module will create this directory automatically if it does not exist.
    - Ensure each module has a `decrypt` function compatible with the interface defined in `AES_v1.1.py`.
-
-4. **Prepare ActiveMQ `.zip` Files** (if used with `LoadActiveMQ`):
-   - If using the `LoadActiveMQ` module from the HACKtiveMQ Suite, download **classic versions** of Apache ActiveMQ `.zip` archives from the [Apache ActiveMQ website](https://activemq.apache.org/components/classic/download/) or other trusted sources.
-   - Place the `.zip` files (e.g., `apache-activemq-5.9.1-bin.zip`) in the `modules/Load_ActiveMQ` directory.
 
 ## Usage
 
