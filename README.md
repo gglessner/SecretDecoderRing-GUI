@@ -1,6 +1,6 @@
 # SecretDecoderRing Module
 
-The `SecretDecoderRing` module is a component of the **HACKtiveMQ Suite**, designed to decrypt ciphertexts using various encryption algorithms and modes on a Windows system. It provides a graphical interface to input ciphertexts, keys, and IVs/nonces, and attempts decryption using multiple cryptographic modules.
+The `SecretDecoderRing` module is a component of the **HACKtiveMQ Suite**, designed to decrypt ciphertexts using various encryption algorithms and modes on a Windows, Linux or MacOS system. It provides a graphical interface to input ciphertexts, keys, and IVs/nonces, and attempts decryption using multiple cryptographic modules.
 
 ## Overview
 
