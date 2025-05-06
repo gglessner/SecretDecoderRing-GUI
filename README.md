@@ -51,7 +51,7 @@ pycryptodome>=3.10.0
 ## Usage
 
 1. **Launch the Module**:
-   - Run the `SecretDecoderRing` module, via the ningu framework or the HACKtiveMQ Suite.
+   - Run the `SecretDecoderRing` module via the ningu framework or the HACKtiveMQ Suite.
 
 2. **Input Data**:
    - **Key**: Enter the encryption key in the `Key` field (Base64, HEX, or ASCII format).
