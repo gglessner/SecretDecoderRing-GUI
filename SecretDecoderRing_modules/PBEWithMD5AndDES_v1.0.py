@@ -1,7 +1,6 @@
 from Crypto.Cipher import DES
 from Crypto.Hash import MD5
 from Crypto.Util.Padding import unpad
-import hashlib
 
 def decrypt(iv, key, ciphertext):
     """
@@ -38,14 +37,14 @@ def decrypt(iv, key, ciphertext):
         except UnicodeDecodeError:
             return False
     
-    def derive_key_iv_pbe(password, salt, iteration_count=1):
+    def derive_key_iv_pbe(password, salt, iteration_count=1000):
         """
         Derive key and IV using PBE with MD5 (PKCS#5 style).
         
         Args:
             password (bytes): Password for derivation
             salt (bytes): Salt for derivation (8 bytes for DES)
-            iteration_count (int): Number of iterations (default 1000)
+            iteration_count (int): Number of iterations
             
         Returns:
             tuple: (key, iv) where key is 8 bytes for DES and iv is 8 bytes
@@ -59,62 +58,55 @@ def decrypt(iv, key, ciphertext):
             digest = MD5.new(digest).digest()
         
         # DES key is 8 bytes, IV is 8 bytes
-        # If digest is only 16 bytes (MD5), use first 8 for key, last 8 for IV
-        if len(digest) >= 16:
-            derived_key = digest[:8]
-            derived_iv = digest[8:16]
-        else:
-            # If somehow we have less, pad with zeros
-            derived_key = (digest + b'\x00' * 8)[:8]
-            derived_iv = b'\x00' * 8
-            
+        derived_key = digest[:8]
+        derived_iv = digest[8:16]
+        
         return derived_key, derived_iv
     
     # Determine salt to use
     salt = iv if iv else b'\x00' * 8  # Use provided iv as salt, or zero salt if none
     
-    # Fixed iteration count (as per request, forget iterations brute force)
-    iterations = 1000  # Default or common value; adjust if needed
-    
-    try:
-        # Derive key and IV
-        derived_key, derived_iv = derive_key_iv_pbe(key, salt[:8], iterations)  # Use first 8 bytes of salt
-        
-        # Try CBC mode with derived IV
+    # Try iterations from 1 to 5000 to match the working code
+    for iterations in range(1, 5001):
         try:
-            cipher = DES.new(derived_key, DES.MODE_CBC, derived_iv)
-            pt_padded = cipher.decrypt(ciphertext)
+            # Derive key and IV
+            derived_key, derived_iv = derive_key_iv_pbe(key, salt[:8], iterations)
             
-            # Try to unpad
+            # Try CBC mode with derived IV
             try:
-                pt = unpad(pt_padded, DES.block_size)
-                if try_utf8(pt):
-                    mode_name = f"PBE-MD5-DES-CBC-Salt{salt.hex()[:8] if salt else 'None'}-Iter{iterations}"
-                    results.append((mode_name, pt))
-            except ValueError:
-                pass  # Invalid padding
+                cipher = DES.new(derived_key, DES.MODE_CBC, derived_iv)
+                pt_padded = cipher.decrypt(ciphertext)
                 
-        except Exception:
-            pass
-        
-        # Try ECB mode (less common for PBE but possible)
-        try:
-            cipher = DES.new(derived_key, DES.MODE_ECB)
-            pt_padded = cipher.decrypt(ciphertext)
+                # Try to unpad
+                try:
+                    pt = unpad(pt_padded, DES.block_size)
+                    if try_utf8(pt):
+                        mode_name = f"PBE-MD5-DES-CBC-Salt{salt.hex()[:8] if salt else 'None'}-Iter{iterations}"
+                        results.append((mode_name, pt))
+                except ValueError:
+                    pass  # Invalid padding
+                    
+            except Exception:
+                pass
             
-            # Try to unpad
+            # Try ECB mode (less common for PBE but possible)
             try:
-                pt = unpad(pt_padded, DES.block_size)
-                if try_utf8(pt):
-                    mode_name = f"PBE-MD5-DES-ECB-Salt{salt.hex()[:8] if salt else 'None'}-Iter{iterations}"
-                    results.append((mode_name, pt))
-            except ValueError:
-                pass  # Invalid padding
+                cipher = DES.new(derived_key, DES.MODE_ECB)
+                pt_padded = cipher.decrypt(ciphertext)
                 
+                # Try to unpad
+                try:
+                    pt = unpad(pt_padded, DES.block_size)
+                    if try_utf8(pt):
+                        mode_name = f"PBE-MD5-DES-ECB-Salt{salt.hex()[:8] if salt else 'None'}-Iter{iterations}"
+                        results.append((mode_name, pt))
+                except ValueError:
+                    pass  # Invalid padding
+                    
+            except Exception:
+                pass
+            
         except Exception:
-            pass
-        
-    except Exception:
-        pass
+            continue
     
     return results
