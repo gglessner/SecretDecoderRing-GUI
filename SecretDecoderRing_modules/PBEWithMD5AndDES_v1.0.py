@@ -66,10 +66,10 @@ def is_valid_plaintext(text):
 def decrypt(iv, key, ciphertext):
     """
     Attempts to decrypt the ciphertext using PBE with MD5 and DES.
-    Uses the IV as the salt and derives the actual DES key and IV using PBKDF1-MD5.
+    Uses the provided salt and derives the actual DES key and IV using PBKDF1-MD5.
 
     Args:
-        iv (bytes): Initialization vector (also used as salt) - 8 bytes
+        iv (bytes): 8-byte salt for PBE key derivation
         key (bytes): Encryption key - will be used as password for PBE
         ciphertext (bytes): Ciphertext to decrypt
 
@@ -81,7 +81,7 @@ def decrypt(iv, key, ciphertext):
 
     # Validate input parameters
     if not iv or len(iv) != 8:
-        return results  # IV must be exactly 8 bytes
+        return results  # Salt must be exactly 8 bytes
     
     if not key:
         return results  # Key cannot be empty
@@ -90,7 +90,7 @@ def decrypt(iv, key, ciphertext):
         return results  # Ciphertext cannot be empty
 
     try:
-        # Use the IV as the salt (as per PBEWithMD5AndDES specification)
+        # Use the provided salt for PBE key derivation
         salt = iv
         
         # Derive the actual DES key and IV using PBE with MD5
