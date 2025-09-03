@@ -66,10 +66,10 @@ def is_valid_plaintext(text):
 def decrypt(iv, key, ciphertext):
     """
     Attempts to decrypt the ciphertext using PBE with MD5 and DES.
-    Uses the provided salt and derives the actual DES key and IV using PBKDF1-MD5.
+    Tries multiple salt configurations: provided salt, prepended salt, appended salt, and no salt.
 
     Args:
-        iv (bytes): 8-byte salt for PBE key derivation
+        iv (bytes): 8-byte salt for PBE key derivation (optional - can be None)
         key (bytes): Encryption key - will be used as password for PBE
         ciphertext (bytes): Ciphertext to decrypt
 
@@ -80,41 +80,60 @@ def decrypt(iv, key, ciphertext):
     results = []
 
     # Validate input parameters
-    if not iv or len(iv) != 8:
-        return results  # Salt must be exactly 8 bytes
-    
     if not key:
         return results  # Key cannot be empty
     
     if not ciphertext or len(ciphertext) == 0:
         return results  # Ciphertext cannot be empty
 
-    try:
-        # Use the provided salt for PBE key derivation
-        salt = iv
-        
-        # Derive the actual DES key and IV using PBE with MD5
-        # Use the provided key as the password for PBE derivation
-        derived_key, derived_iv = derive_key_iv_pbe(key, salt, 1000)
-        
-        # Create DES cipher in CBC mode with derived key and IV
-        cipher = DES.new(derived_key, DES.MODE_CBC, derived_iv)
-        
-        # Decrypt the ciphertext
-        decrypted_padded = cipher.decrypt(ciphertext)
-        
-        # Remove PKCS5 padding
-        decrypted_bytes = unpad(decrypted_padded, DES.block_size)
-        
-        # Convert to string for validation
-        decrypted_text = decrypted_bytes.decode('utf-8')
-        
-        # Validate the decrypted text using the same logic as PBEWithMD5AndDESdecrypt.py
-        if is_valid_plaintext(decrypted_text):
-            results.append(("PBEWithMD5AndDES", decrypted_bytes))
+    # Configuration list: (config_name, salt, actual_ciphertext)
+    configs_to_test = []
+    
+    # 1. If IV/salt is provided, try using it first
+    if iv and len(iv) == 8:
+        configs_to_test.append(("provided_salt", iv, ciphertext))
+    
+    # 2. Try prepended salt configuration (salt is first 8 bytes of ciphertext)
+    if len(ciphertext) >= 16 and len(ciphertext) % 8 == 0:
+        prepended_salt = ciphertext[:8]
+        prepended_ciphertext = ciphertext[8:]
+        configs_to_test.append(("prepended_salt", prepended_salt, prepended_ciphertext))
+    
+    # 3. Try appended salt configuration (salt is last 8 bytes of ciphertext)
+    if len(ciphertext) >= 16 and len(ciphertext) % 8 == 0:
+        appended_salt = ciphertext[-8:]
+        appended_ciphertext = ciphertext[:-8]
+        configs_to_test.append(("appended_salt", appended_salt, appended_ciphertext))
+    
+    # 4. Try no salt configuration (fixed zero salt)
+    zero_salt = b'\x00' * 8
+    configs_to_test.append(("no_salt", zero_salt, ciphertext))
+
+    # Test each configuration
+    for config_name, salt, actual_ciphertext in configs_to_test:
+        try:
+            # Derive the actual DES key and IV using PBE with MD5
+            # Use the provided key as the password for PBE derivation
+            derived_key, derived_iv = derive_key_iv_pbe(key, salt, 1000)
             
-    except Exception:
-        # Any exception during decryption means it failed
-        pass
+            # Create DES cipher in CBC mode with derived key and IV
+            cipher = DES.new(derived_key, DES.MODE_CBC, derived_iv)
+            
+            # Decrypt the ciphertext
+            decrypted_padded = cipher.decrypt(actual_ciphertext)
+            
+            # Remove PKCS5 padding
+            decrypted_bytes = unpad(decrypted_padded, DES.block_size)
+            
+            # Convert to string for validation
+            decrypted_text = decrypted_bytes.decode('utf-8')
+            
+            # Validate the decrypted text using the same logic as PBEWithMD5AndDESdecrypt.py
+            if is_valid_plaintext(decrypted_text):
+                results.append((f"PBEWithMD5AndDES_{config_name}", decrypted_bytes))
+                
+        except Exception:
+            # Any exception during decryption means it failed for this configuration
+            continue
 
     return results
