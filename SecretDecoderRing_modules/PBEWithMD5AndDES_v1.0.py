@@ -92,6 +92,11 @@ def decrypt(iv, key, ciphertext):
     # 1. If IV/salt is provided, try using it first
     if iv and len(iv) == 8:
         configs_to_test.append(("provided_salt", iv, ciphertext))
+        
+        # Also try using the provided salt with the ciphertext minus the first 8 bytes
+        # (in case the ciphertext includes a prepended salt that matches the provided salt)
+        if len(ciphertext) >= 16 and ciphertext[:8] == iv:
+            configs_to_test.append(("provided_salt_adjusted", iv, ciphertext[8:]))
     
     # 2. Try prepended salt configuration (salt is first 8 bytes of ciphertext)
     if len(ciphertext) >= 16 and len(ciphertext) % 8 == 0:
